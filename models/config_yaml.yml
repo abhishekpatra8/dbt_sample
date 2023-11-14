@@ -1,0 +1,9 @@
+version: 2
+
+sources:
+  - name: check_date
+    database: dev964598281092TestDB
+    schema: public
+    tables:
+      - name: check_dates
+      - name: check_exe_data
