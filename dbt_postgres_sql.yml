@@ -1,0 +1,185 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: The CloudFormation template for the Private & Public Subnets with RDS Database.
+
+Parameters:
+    Stage:
+        Type: String
+        Default: dev
+
+Resources:
+    # ======================= Private VPC Configuration ====================
+    # Create a VPC
+    # VPC:
+    #     Type: AWS::EC2::VPC
+    #     Properties: 
+    #         CidrBlock: 172.10.0.0/16
+    #         EnableDnsHostnames: True
+    #         EnableDnsSupport: True
+    #         Tags:
+    #             - 
+    #                 Key: name
+    #                 Value: !Join ['-', [!Ref Stage, !Ref 'AWS::AccountId', 'VPC']]
+
+    # # Create a Subnet
+    # PrivateSubnetA:
+    #     Type: AWS::EC2::Subnet
+    #     Properties:
+    #         CidrBlock: 172.10.2.0/24
+    #         VpcId: !Ref VPC
+    #         AvailabilityZone: !Join ['', [!Ref "AWS::Region", 'a']]
+    #         Tags:
+    #             - 
+    #                 Key: name
+    #                 Value: !Join ['', [!Ref Stage, !Ref 'AWS::AccountId', 'PrivateSubnetA']]
+
+    # # Create a Subnet
+    # PrivateSubnetB:
+    #     Type: AWS::EC2::Subnet
+    #     Properties:
+    #         CidrBlock: 172.10.1.0/24
+    #         VpcId: !Ref VPC
+    #         AvailabilityZone: !Join ['', [!Ref "AWS::Region", 'b']]
+    #         Tags:
+    #             - 
+    #                 Key: name
+    #                 Value: !Join ['', [!Ref Stage, !Ref 'AWS::AccountId', 'PrivateSubnetB']]
+  
+    # # Create a Subnet
+    # PublicSubnetA:
+    #     Type: AWS::EC2::Subnet
+    #     Properties:
+    #         CidrBlock: 172.10.3.0/24
+    #         VpcId: !Ref VPC
+    #         AvailabilityZone: !Join ['', [!Ref "AWS::Region", 'a']]
+    #         Tags:
+    #             - 
+    #                 Key: name
+    #                 Value: !Join ['', [!Ref Stage, !Ref 'AWS::AccountId', 'PublicSubnetA']]
+  
+    # # Create a Route Table. This will contain a route out to Internet Gateway 
+    # PublicRouteTable:
+    #     Type: AWS::EC2::RouteTable
+    #     Properties:
+    #         VpcId: !Ref VPC
+  
+    # # Create a Route Table. This will contain a route out to NAT Gateway 
+    # PrivateRouteTable:
+    #     Type: AWS::EC2::RouteTable
+    #     Properties:
+    #         VpcId: !Ref VPC
+  
+    # # Attach Subnet to Route Table
+    # PrivateSubnetBPrivateRouteAssociation:
+    #     Type: AWS::EC2::SubnetRouteTableAssociation
+    #     Properties: 
+    #         RouteTableId: !Ref PrivateRouteTable
+    #         SubnetId: !Ref PrivateSubnetB
+  
+    # # Attach Subnet to Route Table
+    # PrivateSubnetAPrivateRouteAssociation:
+    #     Type: AWS::EC2::SubnetRouteTableAssociation
+    #     Properties: 
+    #         RouteTableId: !Ref PrivateRouteTable
+    #         SubnetId: !Ref PrivateSubnetA
+  
+    # # Attach Subnet to Route Table
+    # SubnetAPublicRouteAssociation:
+    #     Type: AWS::EC2::SubnetRouteTableAssociation
+    #     Properties: 
+    #         RouteTableId: !Ref PublicRouteTable
+    #         SubnetId: !Ref PublicSubnetA
+  
+    # # Creat a security group and open port 80 and 443 in bound and out bound
+    # SecurityGroup:
+    #     Type: AWS::EC2::SecurityGroup
+    #     Properties:
+    #         GroupDescription: !Join ['-', [!Ref Stage, !Ref 'AWS::AccountId', 'SecurityGroup']]
+    #         VpcId: !Ref VPC
+    #         SecurityGroupIngress:
+    #             -   IpProtocol: tcp
+    #                 FromPort: 80
+    #                 ToPort: 80
+    #                 CidrIp: 0.0.0.0/0
+    #             -   IpProtocol: tcp
+    #                 FromPort: 443
+    #                 ToPort: 443
+    #                 CidrIp: 0.0.0.0/0
+    #             -   IpProtocol: tcp
+    #                 FromPort: 5432
+    #                 ToPort: 5432
+    #                 CidrIp: 0.0.0.0/0
+    #         SecurityGroupEgress:
+    #             -   IpProtocol: tcp
+    #                 FromPort: 80
+    #                 ToPort: 80
+    #                 CidrIp: 0.0.0.0/0
+    #             -   IpProtocol: tcp
+    #                 FromPort: 443
+    #                 ToPort: 443
+    #                 CidrIp: 0.0.0.0/0
+                
+    # # Creat a security group for the database and open port 5432 for mysql access from EC2 Security Group
+    # DBSecurityGroup:
+    #     DependsOn: SecurityGroup                           
+    #     Type: AWS::EC2::SecurityGroup
+    #     Properties:
+    #         GroupDescription: !Join ['-', [!Ref Stage, !Ref 'AWS::AccountId', 'DBSecurityGroup']]
+    #         VpcId: !Ref VPC
+    #         SecurityGroupIngress:
+    #             -   IpProtocol: tcp
+    #                 FromPort: 5432
+    #                 ToPort: 5432
+    #                 SourceSecurityGroupId: !Ref SecurityGroup
+    #         # SecurityGroupEgress:
+    #         #     -   IpProtocol: tcp
+    #         #         FromPort: 5432
+    #         #         ToPort: 5432
+    #         #         SourceSecurityGroupId: !Ref SecurityGroup
+  
+    # # Create an Internet Gateway
+    # InternetGateway:
+    #     Type: AWS::EC2::InternetGateway
+  
+    # # Attach the internet gateway to the VPC
+    # VPCInternetGatewayAttachment:
+    #     Type: AWS::EC2::VPCGatewayAttachment
+    #     Properties: 
+    #         InternetGatewayId: !Ref InternetGateway
+    #         VpcId: !Ref VPC
+  
+    # # Create a route out to Internet Gateway
+    # PublicRoute:
+    #     Type: AWS::EC2::Route
+    #     DependsOn: VPCInternetGatewayAttachment
+    #     Properties:
+    #         RouteTableId: !Ref PublicRouteTable
+    #         DestinationCidrBlock: 0.0.0.0/0
+    #         GatewayId: !Ref InternetGateway
+    # # ======================= Private VPC Configuration ====================
+
+    # # ======================= Database Configuration ====================
+    # DBSubnetGroup:
+    #     Type: AWS::RDS::DBSubnetGroup
+    #     Properties: 
+    #         DBSubnetGroupDescription: !Join ['-', [!Ref Stage, !Ref 'AWS::AccountId', 'TestDBSubnetGroup']]
+    #         DBSubnetGroupName: !Join ['-', [!Ref Stage, !Ref 'AWS::AccountId', 'TestDBSubnetGroup']]
+    #         SubnetIds: 
+    #             - !Ref PrivateSubnetA
+    #             - !Ref PrivateSubnetB
+  
+    RDSDatabase:
+        Type: AWS::RDS::DBInstance
+        Properties:
+            AllocatedStorage: 100
+            DBInstanceClass : db.t3.micro
+            Engine: postgres
+            EngineVersion: 15.3
+            Iops : 1000
+            MasterUsername : postgres
+            MasterUserPassword : test1234
+            PubliclyAccessible: True
+            DBInstanceIdentifier: !Join ['-', [!Ref Stage, !Ref 'AWS::AccountId', 'TestDBInstance']]
+            DBName: !Join ['', [!Ref Stage, !Ref 'AWS::AccountId', 'TestDB']]
+            SourceRegion: ap-south-1
+            DBSubnetGroupName: default
+    # ======================= Database Configuration ====================
